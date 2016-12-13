@@ -1,11 +1,11 @@
 {
   "isDev": false,
   "server": {
-    "port": 8888,
+    "port": 8889,
     "/* secure */": "/* whether this connects via https */",
-    "secure": true,
-    "key": "config/sslcerts/key.pem",
-    "cert": "config/sslcerts/cert.pem",
+    "secure": false,
+    "key": null,
+    "cert": null,
     "password": null
   },
   "rooms": {
@@ -14,12 +14,12 @@
   },
   "stunservers": [
     {
-      "url": "stun:stun.l.google.com:19302"
+      "url": "stun:webrtc-gre.mindojo.com:3478"
     }
   ],
   "turnservers": [
     {
-      "urls": ["turn:your.turn.servers.here"],
+      "urls": ["turn:webrtc-gre.mindojo.com:3478"],
       "secret": "turnserversharedsecret",
       "expiry": 86400
     }
