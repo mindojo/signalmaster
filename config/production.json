@@ -8,6 +8,11 @@
     "cert": null,
     "password": null
   },
+  "xirsys": {
+    "identificator": "mindojo",
+    "secret": "secret",
+    "domain": "app.gre.economist.com"
+  },
   "rooms": {
     "/* maxClients */": "/* maximum number of clients per room. 0 = no limit */",
     "maxClients": 0

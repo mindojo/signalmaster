@@ -1,9 +1,36 @@
 var socketIO = require('socket.io'),
     uuid = require('node-uuid'),
-    crypto = require('crypto');
+    crypto = require('crypto'),
+    https = require('https');
+
 
 module.exports = function (server, config) {
     var io = socketIO.listen(server);
+
+    if (config.logLevel) {
+        // https://github.com/Automattic/socket.io/wiki/Configuring-Socket.IO
+        io.set('log level', config.logLevel);
+    }
+
+    var iceServers = [];
+    var xirsysURL = 'https://service.xirsys.com/ice?' +
+        'ident=' + config.xirsys.identificator +
+        '&secret=' + config.xirsys.secret +
+        '&domain=' + config.xirsys.domain +
+        '&application=default&room=default&secure=1';
+    function updateIceServers() {
+        https.get(xirsysURL, function (result) {
+            result.on('data', function (data) {
+                var response = JSON.parse(data);
+                if (response.d && response.d.iceServers) {
+                    iceServers = response.d.iceServers;
+                } else {
+                    console.log(response);
+                }
+            });
+        });
+    }
+    updateIceServers();
 
     io.sockets.on('connection', function (client) {
         client.resources = {
@@ -98,29 +125,9 @@ module.exports = function (server, config) {
             ));
         });
 
-
-        // tell client about stun and turn servers and generate nonces
-        client.emit('stunservers', config.stunservers || []);
-
-        // create shared secret nonces for TURN authentication
-        // the process is described in draft-uberti-behave-turn-rest
-        var credentials = [];
-        // allow selectively vending turn credentials based on origin.
-        var origin = client.handshake.headers.origin;
-        if (!config.turnorigins || config.turnorigins.indexOf(origin) !== -1) {
-            config.turnservers.forEach(function (server) {
-                var hmac = crypto.createHmac('sha1', server.secret);
-                // default to 86400 seconds timeout unless specified
-                var username = Math.floor(new Date().getTime() / 1000) + (server.expiry || 86400) + "";
-                hmac.update(username);
-                credentials.push({
-                    username: username,
-                    credential: hmac.digest('base64'),
-                    urls: server.urls || server.url
-                });
-            });
-        }
-        client.emit('turnservers', credentials);
+        client.emit('stunservers', [iceServers[0]]);
+        client.emit('turnservers', iceServers.slice(1));
+        updateIceServers();
     });
 
 
