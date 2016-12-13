@@ -18,7 +18,7 @@ module.exports = function (server, config) {
         '&secret=' + config.xirsys.secret +
         '&domain=' + config.xirsys.domain +
         '&application=default&room=default&secure=1';
-    function updateIceServers() {
+    function updateICEServers() {
         https.get(xirsysURL, function (result) {
             result.on('data', function (data) {
                 var response = JSON.parse(data);
@@ -28,9 +28,11 @@ module.exports = function (server, config) {
                     console.log(response);
                 }
             });
+        }).on('error', function (error) {
+            console.log(error);
         });
     }
-    updateIceServers();
+    updateICEServers();
 
     io.sockets.on('connection', function (client) {
         client.resources = {
@@ -127,7 +129,7 @@ module.exports = function (server, config) {
 
         client.emit('stunservers', [iceServers[0]]);
         client.emit('turnservers', iceServers.slice(1));
-        updateIceServers();
+        updateICEServers();
     });
 
 
