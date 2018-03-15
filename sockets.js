@@ -13,7 +13,7 @@ module.exports = function (server, config) {
     }
 
     var iceServers = [];
-    var xirsysURL = 'https://service.xirsys.com/ice?' +
+    var xirsysURL = 'https://global.xirsys.net/ice?' +
         'ident=' + config.xirsys.identificator +
         '&secret=' + config.xirsys.secret +
         '&domain=' + config.xirsys.domain +
