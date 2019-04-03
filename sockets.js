@@ -21,11 +21,18 @@ module.exports = function (server, config) {
     function updateICEServers() {
         https.get(xirsysURL, function (result) {
             result.on('data', function (data) {
-                var response = JSON.parse(data);
-                if (response.d && response.d.iceServers) {
-                    iceServers = response.d.iceServers;
-                } else {
-                    console.log(response);
+                var response;
+                try {
+                    response = JSON.parse(data);
+                } catch (error) {
+                    console.log('Json parse error:', error);
+                }
+                if (response) {
+                    if (response.d && response.d.iceServers) {
+                        iceServers = response.d.iceServers;
+                    } else {
+                        console.log(response);
+                    }
                 }
             });
         }).on('error', function (error) {
