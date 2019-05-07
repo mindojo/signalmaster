@@ -1,11 +1,15 @@
 var socketIO = require('socket.io'),
     uuid = require('node-uuid'),
     crypto = require('crypto'),
-    https = require('https');
+    https = require('https'),
+    Sentry = require('@sentry/node'),
+    dotenv = require('dotenv');
 
 
 module.exports = function (server, config) {
     var io = socketIO.listen(server);
+    dotenv.config({ path: '.env' });
+    Sentry.init({ dsn: process.env.SENTRY_DSN });
 
     if (config.logLevel) {
         // https://github.com/Automattic/socket.io/wiki/Configuring-Socket.IO
@@ -26,17 +30,20 @@ module.exports = function (server, config) {
                     response = JSON.parse(data);
                 } catch (error) {
                     console.log('Json parse error:', error);
+                    Sentry.captureException('Json parse error: ' + error);
                 }
                 if (response) {
                     if (response.d && response.d.iceServers) {
                         iceServers = response.d.iceServers;
                     } else {
                         console.log(response);
+                        Sentry.captureMessage('Response without "d": ' + response, 'warning');
                     }
                 }
             });
         }).on('error', function (error) {
             console.log(error);
+            Sentry.captureMessage(error);
         });
     }
     updateICEServers();
